@@ -36,6 +36,7 @@ const LessonCards: React.FC = () => {
   const [cardsData, setCardsData] = useState(cards);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [narrationEnabled, setNarrationEnabled] = useState(true);
 
   const flipRotation = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -140,9 +141,9 @@ const LessonCards: React.FC = () => {
     }
   };
 
-  // Auto-play audio when card comes into focus
+  // Auto-play audio when card comes into focus (if narration enabled)
   useEffect(() => {
-    if (!isFlipped && !isAnimating) {
+    if (!isFlipped && !isAnimating && narrationEnabled) {
       const currentCard = cardsData[currentCardIndex];
       if (currentCard.audio) {
         // Small delay to ensure card is fully in view
@@ -152,7 +153,7 @@ const LessonCards: React.FC = () => {
         return () => clearTimeout(timer);
       }
     }
-  }, [currentCardIndex, isFlipped, isAnimating]);
+  }, [currentCardIndex, isFlipped, isAnimating, narrationEnabled]);
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -350,6 +351,24 @@ const LessonCards: React.FC = () => {
           <Ionicons name="time-outline" size={16} color="#64748b" />
           <Text style={styles.timerText}>{formatTime(sessionTime)}</Text>
         </View>
+        <TouchableOpacity 
+          style={styles.narrationToggle}
+          onPress={() => {
+            const newNarrationState = !narrationEnabled;
+            setNarrationEnabled(newNarrationState);
+            // Stop audio if turning narration off and audio is playing
+            if (!newNarrationState && isPlaying) {
+              stopAudio();
+            }
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+        >
+          <Ionicons 
+            name={narrationEnabled ? "volume-high" : "volume-mute"} 
+            size={20} 
+            color={narrationEnabled ? "#6366f1" : "#9ca3af"} 
+          />
+        </TouchableOpacity>
         <Text style={styles.counter}>
           {currentCardIndex + 1} / {cards.length}
         </Text>
@@ -597,6 +616,11 @@ const styles = StyleSheet.create({
   counter: {
     fontSize: 14,
     color: '#64748b',
+  },
+  narrationToggle: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f8fafc',
   },
   cardContainer: {
     flex: 1,

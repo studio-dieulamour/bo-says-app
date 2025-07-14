@@ -31,6 +31,7 @@ Added comprehensive audio playback functionality to the philosophical flashcard 
 ##### State Management
 - Added `sound` state for Audio.Sound instance management
 - Added `isPlaying` state for play/pause button UI updates
+- Added `narrationEnabled` state for auto-play control
 
 ##### Audio Functions
 - **`getAudioSource()`**: Maps audio filenames to require() statements
@@ -44,7 +45,12 @@ Added comprehensive audio playback functionality to the philosophical flashcard 
   - Shows pause-circle when playing
   - Only appears on cards with audio files
   - Includes haptic feedback
-- **Styling**: Added `audioButton` styles for proper positioning
+- **Narration Toggle**: Speaker icon in top navigation bar
+  - Shows volume-high when enabled (blue)
+  - Shows volume-mute when disabled (gray)
+  - Controls auto-play behavior
+  - Includes haptic feedback
+- **Styling**: Added `audioButton` and `narrationToggle` styles for proper positioning
 
 #### 5. Auto-Play Behavior
 - **Trigger**: Audio automatically plays when card front comes into focus
@@ -52,19 +58,34 @@ Added comprehensive audio playback functionality to the philosophical flashcard 
   - Card has audio file
   - Card is showing front side (not flipped)
   - No animation in progress
+  - Narration mode is enabled
   - 300ms delay for smooth transition
-- **Dependencies**: Responds to `currentCardIndex`, `isFlipped`, and `isAnimating` changes
+- **Dependencies**: Responds to `currentCardIndex`, `isFlipped`, `isAnimating`, and `narrationEnabled` changes
 
 #### 6. Auto-Stop Behavior
 Audio automatically stops when:
 - **Card is flipped**: From front to back or vice versa
 - **Card navigation**: Swiping/scrolling to different card
 - **Manual control**: User taps pause button
+- **Narration disabled**: User turns off narration mode while audio is playing
 
-#### 7. Cross-Platform Support
+#### 7. Narration Mode Control
+- **Toggle Location**: Top navigation bar between timer and card counter
+- **Visual States**: 
+  - Enabled: volume-high icon in blue (#6366f1)
+  - Disabled: volume-mute icon in gray (#9ca3af)
+- **Functionality**:
+  - Controls whether audio auto-plays when cards come into focus
+  - Manual play buttons work regardless of narration mode
+  - Stops current audio when narration is disabled
+  - Persists user preference during session
+- **User Experience**: Haptic feedback on toggle, smooth visual transitions
+
+#### 8. Cross-Platform Support
 - **Web**: Full functionality with keyboard controls maintained
 - **Mobile**: Touch gestures and haptic feedback integrated
 - **Audio buttons**: Added to both web and mobile card implementations
+- **Narration toggle**: Consistent behavior across all platforms
 
 ### Technical Implementation Details
 
@@ -91,9 +112,10 @@ const audioMap: { [key: string]: any } = {
 
 #### For Users
 1. Navigate to any card with audio (cards 1-2 currently)
-2. Audio plays automatically when card appears
-3. Tap audio button to pause/resume
-4. Audio stops automatically when flipping or changing cards
+2. Audio plays automatically when card appears (if narration mode is enabled)
+3. Toggle narration mode using the speaker icon in the top navigation bar
+4. Tap audio button to pause/resume manually
+5. Audio stops automatically when flipping or changing cards
 
 #### For Developers (Adding More Audio)
 1. Add MP3 file to `assets/audio/`
