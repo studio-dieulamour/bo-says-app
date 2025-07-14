@@ -21,93 +21,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Card } from '@/data/types';
+import { philosophicalCards } from '@/data/cards';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-interface Card {
-  id: number;
-  front: {
-    title: string;
-    insight: string;
-    image: string;
-  };
-  back: {
-    fullQuote: string;
-    source: string;
-    tags: string[];
-  };
-  resonance: number;
-  notes: string;
-  lastSeen: Date;
-}
-
 const LessonCards: React.FC = () => {
-  const [cards] = useState<Card[]>([
-    {
-      id: 1,
-      front: {
-        title: "Atomic Habits",
-        insight: "You do not rise to the level of your goals. You fall to the level of your systems.",
-        image: "📚"
-      },
-      back: {
-        fullQuote: "You do not rise to the level of your goals. You fall to the level of your systems. Your goal is your desired outcome. Your system is the collection of daily habits that will get you there.",
-        source: "James Clear - Atomic Habits, Chapter 1",
-        tags: ["habits", "systems", "productivity"],
-      },
-      resonance: 0,
-      notes: "",
-      lastSeen: new Date()
-    },
-    {
-      id: 2,
-      front: {
-        title: "Tao Te Ching",
-        insight: "When nothing is done, nothing is left undone.",
-        image: "☯️"
-      },
-      back: {
-        fullQuote: "The Tao does nothing, yet nothing is left undone. If powerful people could center themselves in it, the whole world would be transformed by itself, in its natural rhythms.",
-        source: "Lao Tzu - Tao Te Ching, Verse 37",
-        tags: ["taoism", "wu-wei", "philosophy"],
-      },
-      resonance: 0,
-      notes: "",
-      lastSeen: new Date()
-    },
-    {
-      id: 3,
-      front: {
-        title: "Buddhism",
-        insight: "The root of suffering is attachment.",
-        image: "🪷"
-      },
-      back: {
-        fullQuote: "The root of suffering is attachment. When we cling to things, people, or outcomes, we create the conditions for our own suffering. Liberation comes from letting go.",
-        source: "Buddha - Four Noble Truths",
-        tags: ["buddhism", "suffering", "mindfulness"],
-      },
-      resonance: 0,
-      notes: "",
-      lastSeen: new Date()
-    },
-    {
-      id: 4,
-      front: {
-        title: "Tiny Experiments",
-        insight: "Start with the smallest possible step that moves you forward.",
-        image: "🧪"
-      },
-      back: {
-        fullQuote: "The path to big changes is paved with tiny experiments. Start with the smallest possible step that moves you forward, then iterate based on what you learn.",
-        source: "Sam Schillace - Tiny Experiments",
-        tags: ["experimentation", "growth", "iteration"],
-      },
-      resonance: 0,
-      notes: "",
-      lastSeen: new Date()
-    }
-  ]);
+  const [cards] = useState<Card[]>(philosophicalCards);
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
