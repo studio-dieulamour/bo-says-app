@@ -1,50 +1,50 @@
-# Welcome to your Expo app 👋
+# Bo Says - Philosophical Flashcard App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An **Expo React Native flashcard app** for studying philosophical and self-improvement concepts. The app displays lesson cards with wisdom quotes and insights that you can flip to see more details.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Card-based learning** with front/back flipping animation
+- **4 pre-loaded cards** covering topics like Atomic Habits, Taoism, Buddhism, and experimentation 
+- **Interactive elements** including star ratings for resonance and note-taking
+- **Multi-platform support** (iOS, Android, Web) with different gesture controls
+- **Swipe navigation** between cards with smooth animations using React Native Reanimated
+- **Session timer** to track study time
+- **Cross-platform input** - touch gestures on mobile, keyboard shortcuts and scroll on web
 
+## Getting Started
+
+1. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+2. Start the development server:
    ```bash
-   npx expo start
+   npm start
    ```
 
-In the output, you'll find options to open the app in a
+3. Run on specific platforms:
+   ```bash
+   npm run android  # Android
+   npm run ios      # iOS
+   npm run web      # Web
+   ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## How to Use
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- **Tap/Click** cards to flip between front and back
+- **Swipe up/down** (mobile) or use **arrow keys/scroll** (web) to navigate between cards
+- **Rate resonance** with the star system on the back of each card
+- **Add personal notes** to capture your thoughts on each concept
+- **Track your study time** with the built-in session timer
 
-## Get a fresh project
+## Tech Stack
 
-When you're ready, run:
+- **Expo** - React Native development platform
+- **React Native Reanimated** - Smooth animations and gestures
+- **React Native Gesture Handler** - Touch gesture management
+- **TypeScript** - Type safety and better development experience
+- **Expo Vector Icons** - Beautiful iconography
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The app helps users reflect on philosophical concepts by providing structured interaction with wisdom from various sources, allowing them to rate how much each concept resonates and add personal notes.
