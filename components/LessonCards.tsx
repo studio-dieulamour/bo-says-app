@@ -21,6 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { Card } from '@/data/types';
 import { philosophicalCards } from '@/data/cards';
 
@@ -33,6 +34,8 @@ const LessonCards: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const [cardsData, setCardsData] = useState(cards);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const flipRotation = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -76,7 +79,96 @@ const LessonCards: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getAudioSource = (audioFile: string) => {
+    // Map audio files to require statements
+    const audioMap: { [key: string]: any } = {
+      'card1.mp3': require('../assets/audio/card1.mp3'),
+      'card2.mp3': require('../assets/audio/card2.mp3'),
+    };
+    return audioMap[audioFile];
+  };
+
+  const playAudio = async () => {
+    try {
+      const currentCard = cardsData[currentCardIndex];
+      if (!currentCard.audio) return;
+
+      // Stop current sound if playing
+      if (sound) {
+        await sound.unloadAsync();
+        setSound(null);
+      }
+
+      const audioSource = getAudioSource(currentCard.audio);
+      if (!audioSource) {
+        console.log('Audio file not found:', currentCard.audio);
+        return;
+      }
+
+      // Load and play new sound
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        audioSource,
+        { shouldPlay: true }
+      );
+
+      setSound(newSound);
+      setIsPlaying(true);
+
+      // Handle sound completion
+      newSound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setIsPlaying(false);
+        }
+      });
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (error) {
+      console.log('Error playing audio:', error);
+      setIsPlaying(false);
+    }
+  };
+
+  const stopAudio = async () => {
+    try {
+      if (sound) {
+        await sound.stopAsync();
+        setIsPlaying(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (error) {
+      console.log('Error stopping audio:', error);
+    }
+  };
+
+  // Auto-play audio when card comes into focus
+  useEffect(() => {
+    if (!isFlipped && !isAnimating) {
+      const currentCard = cardsData[currentCardIndex];
+      if (currentCard.audio) {
+        // Small delay to ensure card is fully in view
+        const timer = setTimeout(() => {
+          playAudio();
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [currentCardIndex, isFlipped, isAnimating]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
   const handleFlip = () => {
+    // Stop audio when flipping
+    if (isPlaying) {
+      stopAudio();
+    }
+    
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newFlippedState = !isFlipped;
     setIsFlipped(newFlippedState);
@@ -103,6 +195,11 @@ const LessonCards: React.FC = () => {
 
   const handleSwipe = (direction: 'up' | 'down') => {
     if (isAnimating) return; // Prevent multiple animations
+    
+    // Stop audio when swiping to different card
+    if (isPlaying) {
+      stopAudio();
+    }
     
     if (direction === 'up' && currentCardIndex < cards.length - 1) {
       setIsAnimating(true);
@@ -276,6 +373,18 @@ const LessonCards: React.FC = () => {
               <Text style={styles.emoji}>{currentCard.front.image}</Text>
               <Text style={styles.title}>{currentCard.front.title}</Text>
               <Text style={styles.insight}>&ldquo;{currentCard.front.insight}&rdquo;</Text>
+              {currentCard.audio && (
+                <TouchableOpacity 
+                  style={styles.audioButton}
+                  onPress={isPlaying ? stopAudio : playAudio}
+                >
+                  <Ionicons 
+                    name={isPlaying ? "pause-circle" : "play-circle"} 
+                    size={32} 
+                    color="#6366f1" 
+                  />
+                </TouchableOpacity>
+              )}
               <Text style={styles.tapHint}>Tap to flip</Text>
             </Animated.View>
 
@@ -362,6 +471,18 @@ const LessonCards: React.FC = () => {
               <Text style={styles.emoji}>{currentCard.front.image}</Text>
               <Text style={styles.title}>{currentCard.front.title}</Text>
               <Text style={styles.insight}>&ldquo;{currentCard.front.insight}&rdquo;</Text>
+              {currentCard.audio && (
+                <TouchableOpacity 
+                  style={styles.audioButton}
+                  onPress={isPlaying ? stopAudio : playAudio}
+                >
+                  <Ionicons 
+                    name={isPlaying ? "pause-circle" : "play-circle"} 
+                    size={32} 
+                    color="#6366f1" 
+                  />
+                </TouchableOpacity>
+              )}
               <Text style={styles.tapHint}>Tap to flip</Text>
             </Animated.View>
 
@@ -552,6 +673,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9ca3af',
     marginTop: 32,
+  },
+  audioButton: {
+    marginTop: 16,
+    marginBottom: 8,
+    alignSelf: 'center',
   },
   backButton: {
     alignSelf: 'flex-start',

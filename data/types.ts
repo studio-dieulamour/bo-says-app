@@ -10,6 +10,7 @@ export interface Card {
     source: string;     // Author and source citation
     tags: string[];     // Categorization tags
   };
+  audio?: string;       // Audio file path for quote reading
   resonance: number;    // User rating (0-5 stars)
   notes: string;        // Personal notes
   lastSeen: Date;       // Last viewed timestamp

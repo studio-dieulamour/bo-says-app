@@ -13,6 +13,7 @@ export const philosophicalCards: Card[] = [
       source: "James Clear - Atomic Habits, Chapter 1",
       tags: ["habits", "systems", "productivity"],
     },
+    audio: "card1.mp3",
     resonance: 0,
     notes: "",
     lastSeen: new Date()
@@ -29,6 +30,7 @@ export const philosophicalCards: Card[] = [
       source: "Lao Tzu - Tao Te Ching, Verse 37",
       tags: ["taoism", "wu-wei", "philosophy"],
     },
+    audio: "card2.mp3",
     resonance: 0,
     notes: "",
     lastSeen: new Date()
