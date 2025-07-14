@@ -21,7 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { Audio } from 'expo-av';
+import { useAudioPlayer } from 'expo-audio';
 import { Card } from '@/data/types';
 import { philosophicalCards } from '@/data/cards';
 
@@ -34,7 +34,7 @@ const LessonCards: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const [cardsData, setCardsData] = useState(cards);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [currentAudioFile, setCurrentAudioFile] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [narrationEnabled, setNarrationEnabled] = useState(true);
 
@@ -89,16 +89,13 @@ const LessonCards: React.FC = () => {
     return audioMap[audioFile];
   };
 
+  // Create audio player for current audio file
+  const audioPlayer = useAudioPlayer(currentAudioFile ? getAudioSource(currentAudioFile) : null);
+
   const playAudio = async () => {
     try {
       const currentCard = cardsData[currentCardIndex];
       if (!currentCard.audio) return;
-
-      // Stop current sound if playing
-      if (sound) {
-        await sound.unloadAsync();
-        setSound(null);
-      }
 
       const audioSource = getAudioSource(currentCard.audio);
       if (!audioSource) {
@@ -106,21 +103,11 @@ const LessonCards: React.FC = () => {
         return;
       }
 
-      // Load and play new sound
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        audioSource,
-        { shouldPlay: true }
-      );
-
-      setSound(newSound);
+      // Set current audio file and play
+      setCurrentAudioFile(currentCard.audio);
+      audioPlayer.seekTo(0); // Reset position
+      audioPlayer.play();
       setIsPlaying(true);
-
-      // Handle sound completion
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          setIsPlaying(false);
-        }
-      });
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
@@ -131,11 +118,9 @@ const LessonCards: React.FC = () => {
 
   const stopAudio = async () => {
     try {
-      if (sound) {
-        await sound.stopAsync();
-        setIsPlaying(false);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
+      audioPlayer.pause();
+      setIsPlaying(false);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.log('Error stopping audio:', error);
     }
@@ -155,14 +140,12 @@ const LessonCards: React.FC = () => {
     }
   }, [currentCardIndex, isFlipped, isAnimating, narrationEnabled]);
 
-  // Cleanup audio on unmount
+  // Monitor audio player status
   useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+    if (audioPlayer.isLoaded && audioPlayer.status?.didJustFinish) {
+      setIsPlaying(false);
+    }
+  }, [audioPlayer.status]);
 
   const handleFlip = () => {
     // Stop audio when flipping
