@@ -9,7 +9,9 @@ import {
   Keyboard,
   Dimensions,
   Platform,
+  Image,
 } from 'react-native';
+import { Asset } from 'expo-asset';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PanGestureHandler, State, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
@@ -27,6 +29,20 @@ import { philosophicalCards } from '@/data/cards';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+// Calculate card dimensions based on image aspect ratio (1024x1536 = 2:3)
+const CARD_ASPECT_RATIO = 1024 / 1536; // 0.667
+const CARD_WIDTH = SCREEN_WIDTH * 0.85; // Use 85% of screen width
+const CARD_HEIGHT = CARD_WIDTH / CARD_ASPECT_RATIO;
+
+// Preload all images to prevent loading delays
+const imageMap: { [key: string]: any } = {
+  '917dd5af-f82f-4f3c-a194-c94adb2172f5.png': require('../card_images/917dd5af-f82f-4f3c-a194-c94adb2172f5.png'),
+  'af6566c3-f05a-45aa-8d26-1197f7ff0893.png': require('../card_images/af6566c3-f05a-45aa-8d26-1197f7ff0893.png'),
+  'b0cd077e-0925-4838-8d95-b35ecaad178a.png': require('../card_images/b0cd077e-0925-4838-8d95-b35ecaad178a.png'),
+  'e1ec474f-c935-44ba-9ee2-4d88d306d3b5.png': require('../card_images/e1ec474f-c935-44ba-9ee2-4d88d306d3b5.png'),
+  'f861806e-d162-469e-aa63-6328e0da9af2.png': require('../card_images/f861806e-d162-469e-aa63-6328e0da9af2.png'),
+};
+
 const LessonCards: React.FC = () => {
   const [cards] = useState<Card[]>(philosophicalCards);
 
@@ -37,6 +53,7 @@ const LessonCards: React.FC = () => {
   const [currentAudioFile, setCurrentAudioFile] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [narrationEnabled, setNarrationEnabled] = useState(true);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   const flipRotation = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -88,6 +105,27 @@ const LessonCards: React.FC = () => {
     };
     return audioMap[audioFile];
   };
+
+  const getImageSource = (imageName: string) => {
+    return imageMap[imageName] || imageMap['917dd5af-f82f-4f3c-a194-c94adb2172f5.png'];
+  };
+
+  // Preload all images on component mount
+  useEffect(() => {
+    const preloadImages = async () => {
+      try {
+        const imageAssets = Object.values(imageMap);
+        await Asset.loadAsync(imageAssets);
+        setImagesLoaded(true);
+        console.log('All images preloaded successfully');
+      } catch (error) {
+        console.error('Error preloading images:', error);
+        setImagesLoaded(true); // Continue anyway
+      }
+    };
+
+    preloadImages();
+  }, []);
 
   // Create audio player for current audio file
   const audioPlayer = useAudioPlayer(currentAudioFile ? getAudioSource(currentAudioFile) : null);
@@ -325,6 +363,7 @@ const LessonCards: React.FC = () => {
   });
 
   const currentCard = cardsData[currentCardIndex];
+  console.log('Current card index:', currentCardIndex, 'Image:', currentCard?.front?.image);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -357,7 +396,11 @@ const LessonCards: React.FC = () => {
         </Text>
       </View>
 
-      {Platform.OS === 'web' ? (
+      {!imagesLoaded ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading images...</Text>
+        </View>
+      ) : Platform.OS === 'web' ? (
         <Animated.View 
           style={styles.cardContainer}
           onMouseDown={handleMouseDown}
@@ -372,22 +415,13 @@ const LessonCards: React.FC = () => {
             style={styles.card}
           >
             <Animated.View style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}>
-              <Text style={styles.emoji}>{currentCard.front.image}</Text>
-              <Text style={styles.title}>{currentCard.front.title}</Text>
-              <Text style={styles.insight}>&ldquo;{currentCard.front.insight}&rdquo;</Text>
-              {currentCard.audio && (
-                <TouchableOpacity 
-                  style={styles.audioButton}
-                  onPress={isPlaying ? stopAudio : playAudio}
-                >
-                  <Ionicons 
-                    name={isPlaying ? "pause-circle" : "play-circle"} 
-                    size={32} 
-                    color="#6366f1" 
-                  />
-                </TouchableOpacity>
-              )}
-              <Text style={styles.tapHint}>Tap to flip</Text>
+              <Image 
+                key={`card-${currentCardIndex}-${currentCard.front.image}`}
+                source={getImageSource(currentCard.front.image)} 
+                style={styles.cardImageFull}
+                fadeDuration={0}
+                resizeMethod="resize"
+              />
             </Animated.View>
 
             <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}>
@@ -470,22 +504,13 @@ const LessonCards: React.FC = () => {
               style={styles.card}
             >
             <Animated.View style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}>
-              <Text style={styles.emoji}>{currentCard.front.image}</Text>
-              <Text style={styles.title}>{currentCard.front.title}</Text>
-              <Text style={styles.insight}>&ldquo;{currentCard.front.insight}&rdquo;</Text>
-              {currentCard.audio && (
-                <TouchableOpacity 
-                  style={styles.audioButton}
-                  onPress={isPlaying ? stopAudio : playAudio}
-                >
-                  <Ionicons 
-                    name={isPlaying ? "pause-circle" : "play-circle"} 
-                    size={32} 
-                    color="#6366f1" 
-                  />
-                </TouchableOpacity>
-              )}
-              <Text style={styles.tapHint}>Tap to flip</Text>
+              <Image 
+                key={`card-${currentCardIndex}-${currentCard.front.image}`}
+                source={getImageSource(currentCard.front.image)} 
+                style={styles.cardImageFull}
+                fadeDuration={0}
+                resizeMethod="resize"
+              />
             </Animated.View>
 
             <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}>
@@ -606,14 +631,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   cardContainer: {
-    flex: 1,
-    marginHorizontal: 16,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    alignSelf: 'center',
     marginVertical: 20,
     backgroundColor: 'transparent',
     position: 'relative',
   },
   card: {
-    flex: 1,
+    width: '100%',
+    height: '100%',
     position: 'relative',
   },
   cardFace: {
@@ -658,9 +685,17 @@ const styles = StyleSheet.create({
   backContent: {
     flex: 1,
   },
-  emoji: {
-    fontSize: 80,
+  cardImage: {
+    width: 120,
+    height: 120,
     marginBottom: 24,
+    borderRadius: 12,
+  },
+  cardImageFull: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    borderRadius: 16,
+    resizeMode: 'stretch',
   },
   title: {
     fontSize: 24,
@@ -776,6 +811,17 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     marginBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: CARD_HEIGHT,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748b',
+    textAlign: 'center',
   },
 });
 

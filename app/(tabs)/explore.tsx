@@ -69,7 +69,7 @@ export default function ExploreScreen() {
           <ThemedText type="defaultSemiBold">Modern Psychology:</ThemedText> Viktor Frankl, Carl Jung
         </ThemedText>
         <ThemedText>
-          <ThemedText type="defaultSemiBold">Mystical Poetry:</ThemedText> Rumi's Sufi teachings
+          <ThemedText type="defaultSemiBold">Mystical Poetry:</ThemedText> Rumi&apos;s Sufi teachings
         </ThemedText>
         <ThemedText>
           <ThemedText type="defaultSemiBold">Transcendentalism:</ThemedText> Ralph Waldo Emerson
